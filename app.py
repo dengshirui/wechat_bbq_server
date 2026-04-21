@@ -66,23 +66,38 @@ def delete_menu():
 @app.route('/api/order/submit', methods=['POST'])
 def submit_order():
     b = request.json
-    DATA['orders'][b['table']] = {
-        'items': b['items'], 'status': 'pending',
-        'time': time.strftime('%H:%M'), 'note': b.get('note','')
-    }
-    print(f"🔔 新订单: {b['table']} {b['items']}")
+    table = b['table']
+    note = b.get('note', '')
+    menu_prices = {m['name']: m['price'] for m in DATA['menu']}
+    total = sum(menu_prices.get(n, 0) * q for n, q in b['items'].items())
+    record = {'items': b['items'], 'status': 'pending',
+              'time': time.strftime('%H:%M'), 'note': note, 'total': total}
+    # 同一桌用列表存多次点单
+    if table not in DATA['orders']:
+        DATA['orders'][table] = []
+    DATA['orders'][table].append(record)
+    print(f"🔔 新订单: {table} {b['items']}")
     return jsonify({'ok': True})
 
 @app.route('/api/order/status', methods=['POST'])
 def order_status():
     b = request.json
-    if b['table'] in DATA['orders']:
-        DATA['orders'][b['table']]['status'] = b['status']
+    table, idx = b['table'], b.get('idx', 0)
+    if table in DATA['orders'] and idx < len(DATA['orders'][table]):
+        DATA['orders'][table][idx]['status'] = b['status']
     return jsonify({'ok': True})
 
 @app.route('/api/order/delete', methods=['POST'])
 def delete_order():
-    DATA['orders'].pop(request.json.get('table',''), None)
+    b = request.json
+    table, idx = b.get('table',''), b.get('idx', None)
+    if table in DATA['orders']:
+        if idx is not None:
+            DATA['orders'][table].pop(idx)
+            if not DATA['orders'][table]:
+                del DATA['orders'][table]
+        else:
+            del DATA['orders'][table]
     return jsonify({'ok': True})
 
 if __name__ == '__main__':
