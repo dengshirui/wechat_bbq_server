@@ -121,5 +121,8 @@ def delete_cat():
     if name in DATA['cats']: DATA['cats'].remove(name)
     return jsonify(DATA['cats'])
 
+@app.route('/ping', methods=['GET'])
+def ping(): return jsonify({'status': 'ok'})
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
