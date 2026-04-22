@@ -6,20 +6,24 @@ app = Flask(__name__)
 # 内存存储（Railway 免费版重启会清空，生产用 Railway 的 PostgreSQL 插件）
 DATA = {
     "menu": [
-        {"id":1,"name":"羊肉串","price":8,"cat":"冻品"},
-        {"id":2,"name":"牛肉串","price":10,"cat":"冻品"},
-        {"id":3,"name":"猪五花","price":6,"cat":"冻品"},
-        {"id":4,"name":"鸡翅","price":12,"cat":"鲜货"},
-        {"id":5,"name":"大虾","price":15,"cat":"鲜货"},
-        {"id":6,"name":"生蚝","price":12,"cat":"鲜货"},
-        {"id":7,"name":"金针菇","price":5,"cat":"蔬菜"},
-        {"id":8,"name":"玉米","price":6,"cat":"蔬菜"},
-        {"id":9,"name":"茄子","price":5,"cat":"蔬菜"},
-        {"id":10,"name":"啤酒","price":8,"cat":"酒水"},
-        {"id":11,"name":"饮料","price":5,"cat":"酒水"},
+        {"id":1,"name":"羊肉串","price":8,"cat":"招牌烤肉","img":"https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=200&q=80"},
+        {"id":2,"name":"牛肉串","price":10,"cat":"招牌烤肉","img":"https://images.unsplash.com/photo-1558030006-450675393462?w=200&q=80"},
+        {"id":3,"name":"猪五花","price":6,"cat":"招牌烤肉","img":"https://images.unsplash.com/photo-1544025162-d76694265947?w=200&q=80"},
+        {"id":4,"name":"鸡翅","price":12,"cat":"招牌烤肉","img":"https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=200&q=80"},
+        {"id":5,"name":"大虾","price":15,"cat":"招牌烤肉","img":"https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=200&q=80"},
+        {"id":6,"name":"生蚝","price":12,"cat":"招牌烤肉","img":"https://images.unsplash.com/photo-1606731219412-3b1e7a5e3e3e?w=200&q=80"},
+        {"id":7,"name":"金针菇","price":5,"cat":"招牌烤肉","img":"https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=200&q=80"},
+        {"id":8,"name":"玉米","price":6,"cat":"招牌烤肉","img":"https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=200&q=80"},
+        {"id":9,"name":"茄子","price":5,"cat":"招牌烤肉","img":"https://images.unsplash.com/photo-1615484477778-ca3b77940c25?w=200&q=80"},
+        {"id":10,"name":"青岛啤酒","price":8,"cat":"酒水","img":"https://images.unsplash.com/photo-1608270586620-248524c67de9?w=200&q=80"},
+        {"id":11,"name":"雪花啤酒","price":7,"cat":"酒水","img":"https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=200&q=80"},
+        {"id":12,"name":"可乐","price":5,"cat":"饮料","img":"https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200&q=80"},
+        {"id":13,"name":"雪碧","price":5,"cat":"饮料","img":"https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=200&q=80"},
+        {"id":14,"name":"矿泉水","price":3,"cat":"饮料","img":"https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=200&q=80"},
     ],
     "orders": {},
-    "next_id": 12
+    "next_id": 12,
+    "cats": ["招牌烤肉", "酒水", "饮料"]
 }
 
 def cors(resp):
@@ -46,7 +50,8 @@ def get_order():
 def add_menu():
     b = request.json
     item = {"id": DATA['next_id'], "name": b['name'],
-            "price": float(b['price']), "cat": b.get('cat','其他')}
+            "price": float(b['price']), "cat": b.get('cat','其他'),
+            "img": b.get('img','')}
     DATA['menu'].append(item); DATA['next_id'] += 1
     return jsonify(item)
 
@@ -99,6 +104,22 @@ def delete_order():
         else:
             del DATA['orders'][table]
     return jsonify({'ok': True})
+
+@app.route('/api/cats', methods=['GET'])
+def get_cats(): return jsonify(DATA['cats'])
+
+@app.route('/api/cats/add', methods=['POST'])
+def add_cat():
+    name = request.json.get('name','').strip()
+    if name and name not in DATA['cats']:
+        DATA['cats'].append(name)
+    return jsonify(DATA['cats'])
+
+@app.route('/api/cats/delete', methods=['POST'])
+def delete_cat():
+    name = request.json.get('name','')
+    if name in DATA['cats']: DATA['cats'].remove(name)
+    return jsonify(DATA['cats'])
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
