@@ -2,6 +2,7 @@ import json, os, time
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB
 
 # 内存存储（Railway 免费版重启会清空，生产用 Railway 的 PostgreSQL 插件）
 DATA = {
