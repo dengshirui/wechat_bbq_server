@@ -23,7 +23,8 @@ DATA = {
     ],
     "orders": {},
     "next_id": 12,
-    "cats": ["招牌烤肉", "酒水", "饮料"]
+    "cats": ["招牌烤肉", "酒水", "饮料"],
+    "shop": {"phone": "", "qrcode": ""}
 }
 
 def cors(resp):
@@ -120,6 +121,15 @@ def delete_cat():
     name = request.json.get('name','')
     if name in DATA['cats']: DATA['cats'].remove(name)
     return jsonify(DATA['cats'])
+
+@app.route('/api/shop', methods=['GET'])
+def get_shop(): return jsonify(DATA['shop'])
+
+@app.route('/api/shop/update', methods=['POST'])
+def update_shop():
+    b = request.json
+    DATA['shop'].update({k:v for k,v in b.items() if k in ('phone','qrcode')})
+    return jsonify({'ok': True})
 
 @app.route('/ping', methods=['GET'])
 def ping(): return jsonify({'status': 'ok'})
